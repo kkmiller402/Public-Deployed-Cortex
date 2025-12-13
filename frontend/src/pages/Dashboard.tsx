@@ -1,4 +1,4 @@
-import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import { Box, Typography, Button, CircularProgress, TableContainer, Paper, Table, TableCell, TableRow, TableHead, TableBody, TablePagination } from "@mui/material";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import '../App.css'
 import { useNavigate } from "react-router-dom";
@@ -38,6 +38,22 @@ export default function Dashboard() {
     const [users, setUsers] = useState<User[]>([]);
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const handleChangePage = (_: unknown, newPage: number) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
+    const pagedUsers = users.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+    );
 
     const loadUsers = async () => {
         try {
@@ -73,7 +89,7 @@ export default function Dashboard() {
             className="content" sx={{ flexDirection: "column" }}
         >
 
-            <Button variant="contained" color="error" sx={{ position: "fixed", top: 40, left: 40 }} onClick={() => {
+            <Button variant="contained" color="error" sx={{ position: { xs: "absolute", sm: "absolute", md: "fixed" }, top: { xs: 10, sm: 10, md: 40 }, left: { xs: 10, sm: 10, md: 40 } }} onClick={() => {
                 localStorage.removeItem("token");
                 navigate("/login");
             }}>
@@ -160,27 +176,70 @@ export default function Dashboard() {
                 </Typography>
             )}
             {users.length > 0 && (
-                <Box sx={{ marginTop: 4, width: "100%", maxWidth: 600 }}>
-                    <Typography variant="h5" sx={{ color: "#fff", marginBottom: 2 }}>
-                        Registered Users:
-                    </Typography>
-                    {users.map((user) => (
-                        <Box
-                            key={user.pkId}
-                            sx={{
-                                padding: 2,
-                                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                                borderRadius: 2,
-                                marginBottom: 2,
-                            }}
-                        >
-                            <Typography variant="body1" sx={{ color: "#fff" }}>
-                                {user.firstName} {user.lastName} - {user.email} - Role: {user.role}
-                            </Typography>
-                        </Box>
-                    ))}
-                </Box>
+
+                <TableContainer component={Paper}
+                    sx={{
+                        marginTop: "2rem", minHeight: "33vh", maxHeight: "50vh", width: { xs: "100vw", sm: "100vw", md: "75vw", lg: "60vw" },
+                        maxWidth: { xs: "100vw", sm: "100vw", md: "75vw" }, position: "relative"
+                    }}>
+                    <Table size="small" stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Email</TableCell>
+                                <TableCell>First Name</TableCell>
+                                <TableCell>Last Name</TableCell>
+                                <TableCell>Role</TableCell>
+                                <TableCell>Location</TableCell>
+                                <TableCell>Last Signed In</TableCell>
+                            </TableRow>
+                        </TableHead>
+
+                        <TableBody>
+                            {pagedUsers.map((user) => (
+                                <TableRow key={user.pkId} hover>
+                                    <TableCell>{user.email}</TableCell>
+                                    <TableCell>{user.firstName}</TableCell>
+                                    <TableCell>{user.lastName}</TableCell>
+                                    <TableCell>{user.role}</TableCell>
+                                    <TableCell>{user.location ?? "—"}</TableCell>
+                                    <TableCell>
+                                        {user.lastSignedIn
+                                            ? new Date(user.lastSignedIn).toLocaleDateString()
+                                            : "Never"}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+
+                            {users.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={6} align="center">
+                                        No users found
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                    <TablePagination
+                        component="div"
+                        count={users.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        rowsPerPageOptions={[5, 10, 25]}
+                        sx={{
+                            position: "sticky",
+                            bottom: 0,
+                            left: 0,
+                            backgroundColor: "background.paper",
+                            zIndex: 2
+                        }}
+                    />
+                </TableContainer>
             )}
+
+
+
 
 
         </Box>

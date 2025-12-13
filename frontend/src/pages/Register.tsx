@@ -73,8 +73,7 @@ const Register: React.FC<RegisterProps> = ({ setIsAuthenticated }) => {
                 elevation={4}
                 sx={{
                     padding: 4,
-                    width: "100%",
-                    maxWidth: 400,
+                    width: { xs: '90vw', sm: '75vw', md: '33vw' },
                     display: "flex",
                     flexDirection: "column",
                     gap: 3,

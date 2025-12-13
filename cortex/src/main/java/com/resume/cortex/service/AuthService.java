@@ -36,6 +36,8 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid password");
         }
 
+        user.setLastSignedIn(LocalDateTime.now());
+        repo.save(user);
         String token = jwtUtils.generateToken(user.getEmail(), user.getRole().toString());
 
         return new LoginResponse(token, user.getEmail(), user.getRole().toString());
