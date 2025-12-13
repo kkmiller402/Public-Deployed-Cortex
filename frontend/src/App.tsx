@@ -1,0 +1,31 @@
+// App.tsx
+import React from "react";
+import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+
+const App: React.FC = () => {
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    !!localStorage.getItem("token")
+  );
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+        <Route path="/register" element={<Register setIsAuthenticated={setIsAuthenticated} />} />
+        <Route
+          path="/"
+          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+        />
+        {/* Redirect unknown paths */}
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;

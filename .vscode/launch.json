@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-CortexApplication<cortex>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.resume.cortex.CortexApplication",
+            "projectName": "cortex",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
