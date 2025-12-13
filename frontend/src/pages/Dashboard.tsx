@@ -1,4 +1,4 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import '../App.css'
 import { useNavigate } from "react-router-dom";
@@ -37,23 +37,36 @@ export default function Dashboard() {
     const decoded = jwtDecode<MyToken>(token);
     const [users, setUsers] = useState<User[]>([]);
     const [error, setError] = useState<string>("");
+    const [loading, setLoading] = useState(false);
 
     const loadUsers = async () => {
         try {
+            setLoading(true);
             const response = await api.get("/admin");
             setUsers(response.data);
         } catch (error: unknown) {
             setError(error instanceof Error ? error.message : String(error));
+        } finally {
+            setLoading(false);
         }
     };
+
+    useEffect(() => {
+
+        if (!decoded?.exp || decoded.exp * 1000 < Date.now()) {
+            navigate("/login");
+        }
+
+    }, [decoded, navigate]);
 
     useEffect(() => {
         const fetchUsers = async () => {
             await loadUsers();
         };
-
-        fetchUsers();
-    }, [users.length]);
+        if (decoded.role === "ADMIN") {
+            fetchUsers();
+        }
+    }, [decoded.role, users.length]);
 
     return (
         <Box
@@ -140,7 +153,13 @@ export default function Dashboard() {
                     Error: {error}
                 </Typography>
             )}
-            {users.length > 0 && decoded.role === "ADMIN" && (
+            {loading && (
+                <Typography variant="body1" sx={{ color: "#fff", marginTop: 2 }}>
+                    Loading users...
+                    <CircularProgress size={28} />
+                </Typography>
+            )}
+            {users.length > 0 && (
                 <Box sx={{ marginTop: 4, width: "100%", maxWidth: 600 }}>
                     <Typography variant="h5" sx={{ color: "#fff", marginBottom: 2 }}>
                         Registered Users:

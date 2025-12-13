@@ -13,6 +13,7 @@ import {
     IconButton,
     Link,
     InputAdornment,
+    CircularProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
@@ -25,6 +26,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
     const [password, setPassword] = useState<string>("");
     const [showPassword, setShowPassword] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -43,10 +45,10 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
         console.log(data);
 
         try {
+            setLoading(true);
             const response = await api.post("/auth/login", data);
             const loginData = response.data;
             console.log("Registered user:", loginData);
-
             localStorage.setItem("token", loginData.token);
             setIsAuthenticated(true);
             navigate("/");
@@ -54,6 +56,8 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
             const err = error as AxiosError<{ message: string }>;
             const msg = err.response?.data?.message || err.message;
             setErrorMessage(msg);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -140,7 +144,6 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                             "& .MuiInputBase-input": { color: "#FFF" }
                         }}
                     />
-
                     <Button
                         type="submit"
                         variant="contained"
@@ -157,8 +160,10 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                                 color: "#FFF",
                             },
                         }}
+                        disabled={loading}
+                        startIcon={loading ? <CircularProgress size={18} /> : null}
                     >
-                        Login
+                        {loading ? "Loading…" : "Login"}
                     </Button>
                 </form>
 
