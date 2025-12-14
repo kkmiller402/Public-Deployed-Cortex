@@ -1,4 +1,4 @@
-import { Box, Typography, Button, CircularProgress, TableContainer, Paper, Table, TableCell, TableRow, TableHead, TableBody, TablePagination } from "@mui/material";
+import { Box, Typography, Button, CircularProgress, TableContainer, Paper, Table, TableCell, TableRow, TableHead, TableBody, TablePagination, List, ListItem } from "@mui/material";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import '../App.css'
 import { useNavigate } from "react-router-dom";
@@ -35,11 +35,41 @@ export default function Dashboard() {
 
     const token = localStorage.getItem("token") || "";
     const decoded = jwtDecode<MyToken>(token);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [users, setUsers] = useState<User[]>([]);
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState(false);
+    const [loadingUser, setLoadingUser] = useState(false);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const fields = [
+        { label: "Email", value: currentUser?.email },
+        { label: "First Name", value: currentUser?.firstName },
+        { label: "Middle Initial", value: currentUser?.middleInitial },
+        { label: "Last Name", value: currentUser?.lastName },
+        { label: "Suffix", value: currentUser?.suffix },
+        { label: "Phone", value: currentUser?.phone },
+        { label: "Location", value: currentUser?.location },
+        { label: "Role", value: currentUser?.role },
+        {
+            label: "Created Date",
+            value: currentUser?.createdDate ? new Date(currentUser?.createdDate).toLocaleString()
+                : null,
+        },
+        {
+            label: "Updated Date",
+            value: currentUser?.updatedDate
+                ? new Date(currentUser?.updatedDate).toLocaleString()
+                : null,
+        },
+        {
+            label: "Last Signed In",
+            value: currentUser?.lastSignedIn
+                ? new Date(currentUser?.lastSignedIn).toLocaleString()
+                : null,
+        },
+    ];
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
@@ -74,6 +104,23 @@ export default function Dashboard() {
         }
 
     }, [decoded, navigate]);
+
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                setLoadingUser(true);
+                const response = await api.get("/auth/me");
+                setCurrentUser(response.data);
+            } catch (error: unknown) {
+                setError(error instanceof Error ? error.message : String(error));
+            } finally {
+                setLoadingUser(false);
+            }
+        };
+        if (decoded.role !== "ADMIN") {
+            fetchCurrentUser();
+        }
+    }, [decoded.role]);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -237,7 +284,39 @@ export default function Dashboard() {
                     />
                 </TableContainer>
             )}
+            {loadingUser && (
+                <Typography variant="body1" sx={{ color: "#fff", marginTop: 2 }}>
+                    Loading profile info...
+                    <CircularProgress size={28} />
+                </Typography>
+            )}
+            {decoded.role !== "ADMIN" && currentUser && (
+                <>
+                    <Typography variant="h5" sx={{ color: "#fff", marginTop: 4, marginBottom: 2 }}>
+                        Your Profile Information:
+                    </Typography>
+                    <List dense>
+                        {fields
+                            .filter((f) => f.value)
+                            .map((field) => (
+                                <ListItem
+                                    key={field.label}
+                                    disableGutters
+                                    sx={{
+                                        display: "grid",
+                                        gridTemplateColumns: "150px 1fr",
+                                        columnGap: 2,
+                                        borderBottom: "1px solid rgba(255, 255, 255, 0.2)"
+                                    }}
+                                >
+                                    <Typography fontWeight={600}>{field.label}</Typography>
+                                    <Typography color="#FFF">{field.value}</Typography>
+                                </ListItem>
+                            ))}
+                    </List>
+                </>
 
+            )}
 
 
 

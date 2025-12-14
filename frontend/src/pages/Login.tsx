@@ -69,7 +69,8 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                 elevation={4}
                 sx={{
                     padding: 4,
-                    width: { xs: '90vw', sm: '75vw', md: '33vw' },
+                    width: { xs: '75vw', sm: '75vw', md: '33vw' },
+                    maxWidth: { xs: '75vw', sm: '75vw', md: '50vw' },
                     display: "flex",
                     flexDirection: "column",
                     gap: 3,
